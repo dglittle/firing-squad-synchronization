@@ -1,0 +1,207 @@
+<html>
+<head>
+<title>test</title>
+<style>
+
+.fill {
+    width: 100%;
+    height: 100%;
+}
+
+table {
+    border-collapse: collapse;
+}
+th, td {
+    padding: 0;
+}
+
+</style>
+</head>
+<body>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+<script src="http://dglittle.github.io/gl519/index.js"></script>
+<script>
+
+function processCell(left, mid, right) {
+    var self = {}
+
+    if (mid.left) self.left = true
+    if (mid.right) self.right = true
+
+    if (mid.readyAim) {
+        if (mid.left) self.orange = true
+        if (mid.right) self.antiOrange = true
+    }
+
+    if ((mid.left && right && right.right) || (mid.right && left && left.left)) {
+        self.left = self.right = false
+        self.fire = true
+        return self
+    }
+
+    // normal particles
+
+    if (left && left.orange) self.orange = true
+
+    if (right && ((right.orange && !right.left) || right.pink)) self.pink = true
+    if ((self.left && self.pink) || (left && left.green)) {
+        if (self.left && self.pink) self.pink = false
+        self.green = true
+    }
+
+    if ((!self.left && mid.orange) || mid.blue) self.blue = true
+
+    if (self.blue && self.green) {
+        self.blue = false
+        self.green = false
+        self.chartreuse = true
+    }
+
+    if ((right && right.brown && !self.left) || (self.right && self.orange)) {
+        self.orange = false
+        self.blue = false
+        self.green = false
+        self.brown = true
+    }
+
+    if (self.brown && left && left.chartreuse) {
+        self.divide = true
+    }
+
+    if (mid.divide) {
+        self.left = true
+        self.orange = true
+    }
+    if (right && right.divide) {
+        self.right = true
+        self.antiOrange = true
+        return self
+    }
+    if (mid.chartreuse && mid.brown) {
+        self.left = true
+        self.right = true
+        self.orange = true
+        self.antiOrange = true
+        return self
+    }
+
+    // anti particles
+    /*
+    input = input.replace(/left/g, 'XXX')
+    input = input.replace(/right/g, 'left')
+    input = input.replace(/XXX/g, 'right')
+    input = input.replace(/orange/g, 'antiOrange')
+    input = input.replace(/blue/g, 'antiBlue')
+    input = input.replace(/green/g, 'antiGreen')
+    input = input.replace(/pink/g, 'antiPink')
+    input = input.replace(/chartreuse/g, 'antiChartreuse')
+    input = input.replace(/brown/g, 'antiBrown')
+    input = input.replace(/divide/g, 'antiDivide')    
+    */
+    
+    if (right && right.antiOrange) self.antiOrange = true
+
+    if (left && ((left.antiOrange && !left.right) || left.antiPink)) self.antiPink = true
+    if ((self.right && self.antiPink) || (right && right.antiGreen)) {
+        if (self.right && self.antiPink) self.antiPink = false
+        self.antiGreen = true
+    }
+
+    if ((!self.right && mid.antiOrange) || mid.antiBlue) self.antiBlue = true
+
+    if (self.antiBlue && self.antiGreen) {
+        self.antiBlue = false
+        self.antiGreen = false
+        self.antiChartreuse = true
+    }
+
+    if ((left && left.antiBrown && !self.right) || (self.left && self.antiOrange)) {
+        self.antiOrange = false
+        self.antiBlue = false
+        self.antiGreen = false
+        self.antiBrown = true
+    }
+
+    if (self.antiBrown && right && right.antiChartreuse) {
+        self.antiDivide = true
+    }
+
+    if (mid.antiDivide) {
+        self.right = true
+        self.antiOrange = true
+    }
+    if (left && left.antiDivide) {
+        self.left = true
+        self.orange = true
+    }
+    if (mid.antiChartreuse && mid.antiBrown) {
+        self.right = true
+        self.left = true
+        self.antiOrange = true
+        self.orange = true
+    }
+
+    return self
+}
+
+var colors = {
+    left : 'grey',
+    right : 'grey',
+
+    orange : 'orange',
+    green : 'green',
+    pink : 'pink',
+    blue : 'blue',
+    brown : 'brown',
+    chartreuse : '#7FFF00',
+    divide : 'magenta',
+
+    antiOrange : 'orange',
+    antiGreen : 'green',
+    antiPink : 'pink',
+    antiBlue : 'blue',
+    antiBrown : 'brown',
+    antiChartreuse : '#7FFF00',
+    antiDivide : 'magenta',
+
+    fire : 'red'
+}
+
+$(function () {
+    var width = 19
+    var height = 60
+
+    var cells = []
+    for (var w = 0; w < width; w++) {
+        cells.push({
+            left : w == 0,
+            right : w == width - 1,
+            readyAim : w == 0
+        })
+    }
+
+    var d = $('<div/>')
+    for (var h = 0; h < height; h++) {
+        var prevCells = cells
+        var cells = []
+        for (var w = 0; w < width; w++) {
+            var cell = processCell(prevCells[w - 1], prevCells[w], prevCells[w + 1])
+            cells.push(cell)
+            var dd = $('<div style="float:left;width:20px;height:20px;border:1px solid black;"/>')
+            _.each(cell, function (val, key) {
+                if (val) {
+                    dd.append($('<div style="float:left;width:10px;height:10px;"/>').css('background', colors[key]))
+                }
+            })
+            dd.append($('<div style="clear:both"/>'))
+            d.append(dd)
+        }
+        d.append($('<div style="clear:both"/>'))
+    }
+    $('body').append(d)
+})
+
+</script>
+
+</body>
+</html>
